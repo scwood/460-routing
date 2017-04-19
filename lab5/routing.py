@@ -133,7 +133,8 @@ def run_fifteen_nodes():
 
 class PrintingApp(object):
     def receive_packet(self, packet):
-        print('Printing things!')
+        print('Printing things!' + 4)
+        a['asdf']
 
 
 def run(nodes):
@@ -150,24 +151,25 @@ def run(nodes):
 
     
     n1 = nodes[0]
+    n3 = nodes[2]
     n4 = nodes[3]
-    # p = Packet(
-    #     destination_address=32,
-    #     ident=123897, ttl=5, protocol='print', length=100)
-    # printing_app = PrintingApp()
-    # n13.add_protocol(protocol='print', handler=printing_app)
-    # Sim.scheduler.add(delay=1000, event=p, handler=n1.send_packet)
+    n5 = nodes[4]
+    p = Packet(
+        destination_address=5,
+        ident=123897, ttl=5, protocol='print', length=100)
+    printing_app = PrintingApp()
+    n3.add_protocol(protocol='print', handler=printing_app)
 
-    Sim.scheduler.add(delay=0, event=None, handler=n4.get_link('n1').down)
-    Sim.scheduler.add(delay=180, event=None, handler=n4.get_link('n1').up)
+    Sim.scheduler.add(delay=200, event=p, handler=n1.send_packet)
+    # Sim.scheduler.add(delay=100, event=None, handler=n4.get_link('n1').up)
 
     Sim.scheduler.run()
 
 def main():
     Sim.set_debug('Node')
     # run_five_nodes_line()
-    # run_five_nodes_ring()
-    run_fifteen_nodes()
+    run_five_nodes_ring()
+    # run_fifteen_nodes()
 
 
 if __name__ == '__main__':

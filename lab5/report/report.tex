@@ -320,16 +320,142 @@
     \end{verbatim}
   \subsubsection{Trace}
     \begin{verbatim}
-      1000.0 n1 forwarding packet to 9
-      1000.0018 n5 received packet
+      200.0 n1 forwarding packet to 5
+      200.0018 n2 forwarding packet to 5
+      200.0036 n3 received packet
     \end{verbatim}
 
   \subsection{Experiment Results - With Failure}
   \subsubsection{Distance Vectors}
     \begin{verbatim}
+
+    To: n1
+    {
+      "n1": {
+        "cost": 0,
+        "address": null
+      },
+      "n2": {
+        "cost": 1,
+        "address": 3
+      },
+      "n3": {
+        "cost": 2,
+        "address": 5
+      },
+      "n4": {
+        "cost": 3,
+        "address": 7
+      },
+      "n5": {
+        "cost": 4,
+        "address": 10
+      }
+    }
+
+    To: n2
+    {
+      "n1": {
+        "cost": 1,
+        "address": 1
+      },
+      "n2": {
+        "cost": 0,
+        "address": null
+      },
+      "n3": {
+        "cost": 1,
+        "address": 5
+      },
+      "n4": {
+        "cost": 2,
+        "address": 7
+      },
+      "n5": {
+        "cost": 3,
+        "address": 10
+      }
+    }
+
+    To: n3
+    {
+      "n1": {
+        "cost": 2,
+        "address": 1
+      },
+      "n2": {
+        "cost": 1,
+        "address": 4
+      },
+      "n3": {
+        "cost": 0,
+        "address": null
+      },
+      "n4": {
+        "cost": 1,
+        "address": 7
+      },
+      "n5": {
+        "cost": 2,
+        "address": 10
+      }
+    }
+
+    To: n4
+    {
+      "n1": {
+        "cost": 2,
+        "address": 2
+      },
+      "n2": {
+        "cost": 2,
+        "address": 4
+      },
+      "n3": {
+        "cost": 1,
+        "address": 6
+      },
+      "n4": {
+        "cost": 0,
+        "address": null
+      },
+      "n5": {
+        "cost": 1,
+        "address": 10
+      }
+    }
+
+    To: n5
+    {
+      "n1": {
+        "cost": 1,
+        "address": 2
+      },
+      "n2": {
+        "cost": 2,
+        "address": 3
+      },
+      "n3": {
+        "cost": 2,
+        "address": 6
+      },
+      "n4": {
+        "cost": 1,
+        "address": 8
+      },
+      "n5": {
+        "cost": 0,
+        "address": null
+      }
+    }
+
     \end{verbatim}
   \subsubsection{Trace}
     \begin{verbatim}
+      350.0 n1 forwarding packet to 6
+      350.0018 n5 forwarding packet to 6
+      350.0036 n4 forwarding packet to 6
+      350.0054 n3 received packet
     \end{verbatim}
 
 \section{Experiment 3 - Mesh Network}
@@ -346,17 +472,228 @@
   \subsection{Experiment Results - No Failure}
   \subsubsection{Distance Vectors}
     \begin{verbatim}
+      ...
+      To: n1, Packet #140
+      {
+        "n12": {
+          "cost": 3,
+          "address": 31
+        },
+        "n13": {
+          "cost": 3,
+          "address": 32
+        },
+        "n10": {
+          "cost": 1,
+          "address": 29
+        },
+        "n11": {
+          "cost": 2,
+          "address": 30
+        },
+        "n14": {
+          "cost": 2,
+          "address": 33
+        },
+        "n15": {
+          "cost": 3,
+          "address": 36
+        },
+        "n8": {
+          "cost": 2,
+          "address": 25
+        },
+        "n9": {
+          "cost": 2,
+          "address": 27
+        },
+        "n1": {
+          "cost": 0,
+          "address": null
+        },
+        "n2": {
+          "cost": 1,
+          "address": 5
+        },
+        "n3": {
+          "cost": 2,
+          "address": 9
+        },
+        "n4": {
+          "cost": 1,
+          "address": 12
+        },
+        "n5": {
+          "cost": 2,
+          "address": 16
+        },
+        "n6": {
+          "cost": 1,
+          "address": 19
+        },
+        "n7": {
+          "cost": 2,
+          "address": 22
+        }
+      }
+      ...
     \end{verbatim}
   \subsubsection{Trace}
     \begin{verbatim}
+      100.0 n1 forwarding packet to 16
+      100.0018 n4 forwarding packet to 16
+      100.0036 n5 received packet
     \end{verbatim}
 
-  \subsection{Experiment Results - With Failure}
+  \subsection{Experiment Results - After taking link down}
   \subsubsection{Distance Vectors}
     \begin{verbatim}
+      200.0 n1 forwarding packet to 5
+      200.0018 n2 forwarding packet to 9
+      200.0036 n3 forwarding packet to 16
+      200.0054 n5 received packet
     \end{verbatim}
   \subsubsection{Trace}
     \begin{verbatim}
+      To: n1, Packet #10197
+      {
+        "n12": {
+          "cost": 4,
+          "address": 31
+        },
+        "n13": {
+          "cost": 4,
+          "address": 32
+        },
+        "n10": {
+          "cost": 1,
+          "address": 29
+        },
+        "n11": {
+          "cost": 5,
+          "address": 30
+        },
+        "n14": {
+          "cost": 2,
+          "address": 33
+        },
+        "n15": {
+          "cost": 3,
+          "address": 36
+        },
+        "n8": {
+          "cost": 2,
+          "address": 25
+        },
+        "n9": {
+          "cost": 2,
+          "address": 27
+        },
+        "n1": {
+          "cost": 0,
+          "address": null
+        },
+        "n2": {
+          "cost": 1,
+          "address": 5
+        },
+        "n3": {
+          "cost": 2,
+          "address": 9
+        },
+        "n4": {
+          "cost": 4,
+          "address": 13
+        },
+        "n5": {
+          "cost": 3,
+          "address": 15
+        },
+        "n6": {
+          "cost": 1,
+          "address": 19
+        },
+        "n7": {
+          "cost": 2,
+          "address": 22
+        }
+      }
+    \end{verbatim}
+
+  \subsection{Experiment Results - After link has come back up}
+  \subsubsection{Distance Vectors}
+    \begin{verbatim}
+      ...
+      To: n1, Packet #140
+      {
+        "n12": {
+          "cost": 3,
+          "address": 31
+        },
+        "n13": {
+          "cost": 3,
+          "address": 32
+        },
+        "n10": {
+          "cost": 1,
+          "address": 29
+        },
+        "n11": {
+          "cost": 2,
+          "address": 30
+        },
+        "n14": {
+          "cost": 2,
+          "address": 33
+        },
+        "n15": {
+          "cost": 3,
+          "address": 36
+        },
+        "n8": {
+          "cost": 2,
+          "address": 25
+        },
+        "n9": {
+          "cost": 2,
+          "address": 27
+        },
+        "n1": {
+          "cost": 0,
+          "address": null
+        },
+        "n2": {
+          "cost": 1,
+          "address": 5
+        },
+        "n3": {
+          "cost": 2,
+          "address": 9
+        },
+        "n4": {
+          "cost": 1,
+          "address": 12
+        },
+        "n5": {
+          "cost": 2,
+          "address": 16
+        },
+        "n6": {
+          "cost": 1,
+          "address": 19
+        },
+        "n7": {
+          "cost": 2,
+          "address": 22
+        }
+      }
+      ...
+    \end{verbatim}
+  \subsubsection{Trace}
+    \begin{verbatim}
+      350.0 n1 forwarding packet to 16
+      350.0018 n4 forwarding packet to 16
+      350.0036 n5 received packet
     \end{verbatim}
 
   \subsection{Analysis}

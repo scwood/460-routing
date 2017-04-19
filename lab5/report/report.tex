@@ -1,0 +1,365 @@
+\documentclass[fleqn,11pt]{article}
+
+\usepackage[letterpaper,margin=0.75in]{geometry}
+
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{verbatim}
+
+\setlength{\parindent}{1.4em}
+
+\begin{document}
+
+\lstset{
+  language=Python,
+  basicstyle=\small,          % print whole listing small
+  keywordstyle=\bfseries,
+  identifierstyle=,           % nothing happens
+  commentstyle=,              % white comments
+  stringstyle=\ttfamily,      % typewriter type for strings
+  showstringspaces=false,     % no special string spaces
+  numbers=left,
+  numberstyle=\tiny,
+  numbersep=5pt,
+  frame=tb,
+}
+
+\title{Lab 5 Report}
+
+\author{Kyle Cornelison, Spencer Wood}
+
+\date{4/18/2017}
+
+\maketitle
+
+\section{Routing Algorithm Details}
+  Our routing algorithm is based on the distance-vector routing algorithm which
+  uses the Bellman-Ford algorithm used to find the shortest path from each node
+  to all of the other nodes within a graph. Our implementation relies on nodes
+  broadcasting their distance-vector to each of their neighbors, defined to be
+  one hop away. Upon receiving a broadcasted distane-vector packet the node will
+  compare its distance vector to the one it received and update any costs, and
+  forwarding entries accordingly.
+
+\section{Experiment 1 - Line of 5 Nodes}
+  \subsection{Network Configuration}
+    \verbatiminput{../networks/five-nodes-line.txt}
+  \subsection{Experiment Description}
+    The following experiment utilizes our routing algorithm to determine routes
+    between the nodes in the network displayed above. We then send a packet
+    from node 1 to node 5 and trace the path it takes. The path taken should be
+    in sequence from node 1 to node 5 (1, 2, 3, 4, 5).
+
+  \subsection{Experiment Results}
+  \subsubsection{Distance Vectors}
+    \begin{verbatim}
+      To: n1, Packet #20
+      {
+        "n1": {
+          "cost": 0,
+          "address": null
+        },
+        "n2": {
+          "cost": 1,
+          "address": 2
+        },
+        "n3": {
+          "cost": 2,
+          "address": 4
+        },
+        "n4": {
+          "cost": 3,
+          "address": 6
+        },
+        "n5": {
+          "cost": 4,
+          "address": 8
+        }
+      }
+
+      To: n2, Packet #24
+      {
+        "n1": {
+          "cost": 1,
+          "address": 1
+        },
+        "n2": {
+          "cost": 0,
+          "address": null
+        },
+        "n3": {
+          "cost": 1,
+          "address": 4
+        },
+        "n4": {
+          "cost": 2,
+          "address": 6
+        },
+        "n5": {
+          "cost": 3,
+          "address": 8
+        }
+      }
+
+      To: n3, Packet #20
+      {
+        "n1": {
+          "cost": 2,
+          "address": 1
+        },
+        "n2": {
+          "cost": 1,
+          "address": 3
+        },
+        "n3": {
+          "cost": 0,
+          "address": null
+        },
+        "n4": {
+          "cost": 1,
+          "address": 6
+        },
+        "n5": {
+          "cost": 2,
+          "address": 8
+        }
+      }
+
+      To: n4, Packet #25
+      {
+        "n1": {
+          "cost": 3,
+          "address": 1
+        },
+        "n2": {
+          "cost": 2,
+          "address": 3
+        },
+        "n3": {
+          "cost": 1,
+          "address": 5
+        },
+        "n4": {
+          "cost": 0,
+          "address": null
+        },
+        "n5": {
+          "cost": 1,
+          "address": 8
+        }
+      }
+
+      To: n5, Packet #21
+      {
+        "n1": {
+          "cost": 4,
+          "address": 1
+        },
+        "n2": {
+          "cost": 3,
+          "address": 3
+        },
+        "n3": {
+          "cost": 2,
+          "address": 5
+        },
+        "n4": {
+          "cost": 1,
+          "address": 7
+        },
+        "n5": {
+          "cost": 0,
+          "address": null
+        }
+      }
+    \end{verbatim}
+  \subsubsection{Trace}
+    \begin{verbatim}
+      1000.0 n1 forwarding packet to 8
+      1000.0018 n2 forwarding packet to 8
+      1000.0036 n3 forwarding packet to 8
+      1000.0054 n4 forwarding packet to 8
+      1000.0072 n5 received packet
+    \end{verbatim}
+
+\section{Experiment 2 - Ring of 5 Nodes}
+  \subsection{Network Configuration}
+    \verbatiminput{../networks/five-nodes-ring.txt}
+  \subsection{Experiment Description}
+    The following experiment utilizes our routing algorithm to determine routes
+    between the nodes in the network displayed above. We then send a packet
+    from node 1 to node 5 and trace the path it takes. The path taken should be
+    in sequence from node 1 to node 5 (1, 5). We then take down a link
+    (the link between 1 and 5) and trace the new path taken from node 1 to
+    node 5 (1, 2, 3, 4, 5).
+
+  \subsection{Experiment Results - No Failure}
+  \subsubsection{Distance Vectors}
+    \begin{verbatim}
+      To: n1, Packet #25
+      {
+        "n1": {
+          "cost": 0,
+          "address": null
+        },
+        "n2": {
+          "cost": 1,
+          "address": 3
+        },
+        "n3": {
+          "cost": 2,
+          "address": 5
+        },
+        "n4": {
+          "cost": 2,
+          "address": 8
+        },
+        "n5": {
+          "cost": 1,
+          "address": 9
+        }
+      }
+
+      To: n2, Packet #24
+      {
+        "n1": {
+          "cost": 1,
+          "address": 1
+        },
+        "n2": {
+          "cost": 0,
+          "address": null
+        },
+        "n3": {
+          "cost": 1,
+          "address": 5
+        },
+        "n4": {
+          "cost": 2,
+          "address": 7
+        },
+        "n5": {
+          "cost": 2,
+          "address": 9
+        }
+      }
+
+      To: n3, Packet #23
+      {
+        "n1": {
+          "cost": 2,
+          "address": 1
+        },
+        "n2": {
+          "cost": 1,
+          "address": 4
+        },
+        "n3": {
+          "cost": 0,
+          "address": null
+        },
+        "n4": {
+          "cost": 1,
+          "address": 7
+        },
+        "n5": {
+          "cost": 2,
+          "address": 10
+        }
+      }
+
+      To: n4, Packet #25
+      {
+        "n1": {
+          "cost": 2,
+          "address": 2
+        },
+        "n2": {
+          "cost": 2,
+          "address": 4
+        },
+        "n3": {
+          "cost": 1,
+          "address": 6
+        },
+        "n4": {
+          "cost": 0,
+          "address": null
+        },
+        "n5": {
+          "cost": 1,
+          "address": 10
+        }
+      }
+
+      To: n5, Packet #23
+      {
+        "n1": {
+          "cost": 1,
+          "address": 2
+        },
+        "n2": {
+          "cost": 2,
+          "address": 3
+        },
+        "n3": {
+          "cost": 2,
+          "address": 6
+        },
+        "n4": {
+          "cost": 1,
+          "address": 8
+        },
+        "n5": {
+          "cost": 0,
+          "address": null
+        }
+      }
+    \end{verbatim}
+  \subsubsection{Trace}
+    \begin{verbatim}
+      1000.0 n1 forwarding packet to 9
+      1000.0018 n5 received packet
+    \end{verbatim}
+
+  \subsection{Experiment Results - With Failure}
+  \subsubsection{Distance Vectors}
+    \begin{verbatim}
+    \end{verbatim}
+  \subsubsection{Trace}
+    \begin{verbatim}
+    \end{verbatim}
+
+\section{Experiment 3 - Mesh Network}
+  \subsection{Network Configuration}
+    \verbatiminput{../networks/fifteen-nodes.txt}
+  \subsection{Experiment Description}
+    The following experiment utilizes our routing algorithm to determine routes
+    between the nodes in the network displayed above. We then send a packet
+    from node 1 to node 5 and trace the path it takes. The path taken should be
+    in sequence from node 1 to node 5 (1, 4, 5). We then take down a link
+    (the link between 1 and 4) and trace the new path taken
+    from node 1 to node 5 (1, 2, 3, 5).
+
+  \subsection{Experiment Results - No Failure}
+  \subsubsection{Distance Vectors}
+    \begin{verbatim}
+    \end{verbatim}
+  \subsubsection{Trace}
+    \begin{verbatim}
+    \end{verbatim}
+
+  \subsection{Experiment Results - With Failure}
+  \subsubsection{Distance Vectors}
+    \begin{verbatim}
+    \end{verbatim}
+  \subsubsection{Trace}
+    \begin{verbatim}
+    \end{verbatim}
+
+  \subsection{Analysis}
+    In conclusion the distance-vector routing algorithm is simple to implement and performs a good job at managing failures amongst nodes.
+    The main drawback to this approach is the time it takes for the nodes' distance vectors to converge on the best routes to take.
+\end{document}

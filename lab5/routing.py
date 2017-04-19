@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import sys
+import json
 
 sys.path.append('..')
 
@@ -18,26 +19,38 @@ class BroadcastApp(object):
         self.node = node
         self.name = name
         self.distance_vector = {}
-        self.distance_vector[self.name] = 0
+        self.distance_vector[self.name] = {
+            'address': None,
+            'cost': 0
+        }
 
     def receive_packet(self, packet):
         neighbor_vector = packet.body[0]
         neighbor_node = packet.body[1]
+        neighbor_link = self.node.get_link(neighbor_node.hostname)
         modified = False
-        for node_name, distance in neighbor_vector.items():
-            if node_name not in self.distance_vector:
+
+        for node_name, obj in neighbor_vector.items():
+            new_cost = obj['cost']
+            new_address = obj['address']
+            if node_name not in self.distance_vector: 
                 modified = True
-                self.distance_vector[node_name] = neighbor_vector[node_name] + 1
-                self.node.add_forwarding_entry(address=neighbor_node.get_address(self.name),
-                                               link=self.node.get_link(neighbor_node.hostname))
-            elif neighbor_vector[node_name] + 1 < self.distance_vector[node_name]:
+                self.distance_vector[node_name] = obj
+                self.distance_vector[node_name]['cost'] = new_cost + 1
+                self.node.add_forwarding_entry(new_address, neighbor_link)
+            elif new_cost + 1 < self.distance_vector[node_name]['cost']:
                 modified = True
-                self.distance_vector[node_name] = neighbor_vector[node_name] + 1
-                self.node.add_forwarding_entry(address=neighbor_node.get_address(self.name),
-                                               link=self.node.get_link(neighbor_node.hostname))
+                self.distance_vector[node_name] = obj
+                self.distance_vector[node_name]['cost'] = new_cost + 1
+                self.node.add_forwarding_entry(new_address, neighbor_link)
+        
+        neightbor_address = neighbor_node.get_address(self.name)
+        self.distance_vector[neighbor_node.hostname]['address'] = neightbor_address
+        self.node.add_forwarding_entry(neightbor_address, neighbor_link)
+
         print()
         print('To: {}, Packet #{}'.format(self.node.hostname, packet.ident))
-        print(self.distance_vector)
+        print(json.dumps(self.distance_vector, indent=2))
         if modified:
             self.broadcast()
 
@@ -80,7 +93,38 @@ def run_five_nodes_ring():
 
 
 def run_fifteen_nodes():
-    pass
+    network = Network('./networks/fifteen-nodes.txt')
+    n1 = network.get_node('n1')
+    n2 = network.get_node('n2')
+    n3 = network.get_node('n3')
+    n4 = network.get_node('n4')
+    n5 = network.get_node('n5')
+    n6 = network.get_node('n6')
+    n7 = network.get_node('n7')
+    n8 = network.get_node('n8')
+    n9 = network.get_node('n9')
+    n10 = network.get_node('n10')
+    n11 = network.get_node('n11')
+    n12 = network.get_node('n12')
+    n13 = network.get_node('n13')
+    n14 = network.get_node('n14')
+    n15 = network.get_node('n15')
+    run([(n1, 'n1'),
+         (n2, 'n2'),
+         (n3, 'n3'),
+         (n4, 'n4'),
+         (n5, 'n5'),
+         (n6, 'n6'),
+         (n7, 'n7'),
+         (n8, 'n8'),
+         (n9, 'n9'),
+         (n10, 'n10'),
+         (n11, 'n11'),
+         (n12, 'n12'),
+         (n13, 'n13'),
+         (n14, 'n14'),
+         (n15, 'n15')])
+
 
 
 class SomeClass(object):
@@ -103,27 +147,22 @@ def run(nodes):
         app.broadcast()
 
     
-    # n1 = nodes[0][0]
-    # n2 = nodes[1][0]
-    # n3 = nodes[2][0]
-    # n5 = nodes[4][0]
-    # n1.add_forwarding_entry(address=n2.get_address('n1'), link=n1.get_link('n2'))
-    # n2.add_forwarding_entry(address=n3.get_address('n2'), link=n2.get_link('n3'))
-    # n3.add_forwarding_entry(address=n4.get_address('n3'), link=n3.get_link('n4'))
-    # p = Packet(
-    #     destination_address=n5.get_address('n1'),
-    #     ident=123897, ttl=5, protocol='print', length=100)
-    # thingie = SomeClass()
-    # n5.add_protocol(protocol="print", handler=thingie)
-    # Sim.scheduler.add(delay=1000, event=p, handler=n1.send_packet)
-    # Sim.scheduler.run()
+    n1 = nodes[0][0]
+    n4 = nodes[3][0]
+    p = Packet(
+        destination_address=8,
+        ident=123897, ttl=5, protocol='print', length=100)
+    thingie = SomeClass()
+    n4.add_protocol(protocol="print", handler=thingie)
+    Sim.scheduler.add(delay=1000, event=p, handler=n1.send_packet)
+    Sim.scheduler.run()
 
 
 def main():
     Sim.set_debug('Node')
-    run_five_nodes_line()
+    # run_five_nodes_line()
     run_five_nodes_ring()
-    run_fifteen_nodes()
+    # run_fifteen_nodes()
 
 
 if __name__ == '__main__':

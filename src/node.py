@@ -114,3 +114,4 @@ class Node(object):
             self.trace("%s forwarding broadcast packet to %s" % (self.hostname, link.endpoint.hostname))
             packet_copy = copy.deepcopy(packet)
             link.send_packet(packet_copy)
+

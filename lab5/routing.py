@@ -15,51 +15,78 @@ class BroadcastApp(object):
 
     packet_ident = 1
 
-    def __init__(self, node, name):
+    def __init__(self, node):
         self.node = node
-        self.name = name
         self.distance_vector = {}
-        self.distance_vector[self.name] = {
+        self.distance_vector[self.node.hostname] = {
             'address': None,
             'cost': 0
         }
+        self.times_broadcasted = 0
+        self.seen_lately = {}
+        self.reset_seen_lately()
 
     def receive_packet(self, packet):
-        neighbor_vector = packet.body[0]
-        neighbor_node = packet.body[1]
-        neighbor_link = self.node.get_link(neighbor_node.hostname)
-        modified = False
+        neighbor_name = packet.body[0]
+        neighbor_distance_vector = packet.body[1]
+        neighbor_addresses = packet.body[2]
+        neighbor_link = self.node.get_link(neighbor_name)
+        self.seen_lately[neighbor_name] = True
 
-        for node_name, obj in neighbor_vector.items():
+        for node_name, obj in neighbor_distance_vector.items():
             new_cost = obj['cost']
             new_address = obj['address']
-            if node_name not in self.distance_vector: 
-                modified = True
-                self.distance_vector[node_name] = obj
-                self.distance_vector[node_name]['cost'] = new_cost + 1
-                self.node.add_forwarding_entry(new_address, neighbor_link)
-            elif new_cost + 1 < self.distance_vector[node_name]['cost']:
-                modified = True
+            if new_cost is None:
+                self.distance_vector[node_name] = new_cost
+            elif (node_name not in self.distance_vector or
+                    new_cost + 1 < self.distance_vector[node_name]['cost']):
                 self.distance_vector[node_name] = obj
                 self.distance_vector[node_name]['cost'] = new_cost + 1
                 self.node.add_forwarding_entry(new_address, neighbor_link)
         
-        neightbor_address = neighbor_node.get_address(self.name)
-        self.distance_vector[neighbor_node.hostname]['address'] = neightbor_address
+        neightbor_address = neighbor_addresses[self.node.hostname]
+        self.distance_vector[neighbor_name]['address'] = neightbor_address
         self.node.add_forwarding_entry(neightbor_address, neighbor_link)
 
         print()
         print('To: {}, Packet #{}'.format(self.node.hostname, packet.ident))
         print(json.dumps(self.distance_vector, indent=2))
-        if modified:
+        self.times_broadcasted += 1
+
+        if self.times_broadcasted == 3:
+            self.detect_broken_links()
             self.broadcast()
+            self.delete_broken_links()
+            self.reset_seen_lately()
+            self.times_broadcasted = 0
+        else:
+            self.broadcast()
+            self.delete_broken_links()
+
+    def reset_seen_lately(self):
+        for link in self.node.links:
+            self.seen_lately[link.endpoint.hostname] = False
+
+    def detect_broken_links(self):
+        for name, seen_lately in self.seen_lately.items():
+            if name in self.distance_vector and not seen_lately:
+                self.distance_vector[name]['cost'] = None
+
+    def delete_broken_links(self):
+        for name, obj in self.distance_vector.items():
+            import math
+            if obj['cost'] is None:
+                del self.distance_vector[name]
 
     def broadcast(self):
+        addresses = {}
+        for link in self.node.links:
+            addresses[link.endpoint.hostname] = link.address
         p = Packet(
-            source_address=self.node.get_address(self.name),
+            source_address=self.node.get_address(self.node.hostname),
             destination_address=0,
             ident=BroadcastApp.packet_ident, ttl=1, protocol='dvrouting', length=100,
-            body=(self.distance_vector, self.node))
+            body=(self.node.hostname, self.distance_vector, addresses))
         Sim.scheduler.add(delay=30, event=p, handler=self.node.send_packet)
         BroadcastApp.packet_ident += 1
 
@@ -71,11 +98,7 @@ def run_five_nodes_line():
     n3 = network.get_node('n3')
     n4 = network.get_node('n4')
     n5 = network.get_node('n5')
-    run([(n1, 'n1'),
-         (n2, 'n2'),
-         (n3, 'n3'),
-         (n4, 'n4'),
-         (n5, 'n5')])
+    run([n1, n2, n3, n4, n5])
 
 
 def run_five_nodes_ring():
@@ -85,11 +108,7 @@ def run_five_nodes_ring():
     n3 = network.get_node('n3')
     n4 = network.get_node('n4')
     n5 = network.get_node('n5')
-    run([(n1, 'n1'),
-         (n2, 'n2'),
-         (n3, 'n3'),
-         (n4, 'n4'),
-         (n5, 'n5')])
+    run([n1, n2, n3, n4, n5])
 
 
 def run_fifteen_nodes():
@@ -109,37 +128,20 @@ def run_fifteen_nodes():
     n13 = network.get_node('n13')
     n14 = network.get_node('n14')
     n15 = network.get_node('n15')
-    run([(n1, 'n1'),
-         (n2, 'n2'),
-         (n3, 'n3'),
-         (n4, 'n4'),
-         (n5, 'n5'),
-         (n6, 'n6'),
-         (n7, 'n7'),
-         (n8, 'n8'),
-         (n9, 'n9'),
-         (n10, 'n10'),
-         (n11, 'n11'),
-         (n12, 'n12'),
-         (n13, 'n13'),
-         (n14, 'n14'),
-         (n15, 'n15')])
+    run([n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15])
 
 
-
-class SomeClass(object):
+class PrintingApp(object):
     def receive_packet(self, packet):
-        print('stuff')
+        print('Printing things!')
 
 
 def run(nodes):
     Sim.scheduler.reset()
 
     apps = []
-    for tuple in nodes:
-        node = tuple[0]
-        name = tuple[1]
-        b = BroadcastApp(node, name)
+    for node in nodes:
+        b = BroadcastApp(node)
         node.add_protocol(protocol="dvrouting", handler=b)
         apps.append(b)
 
@@ -147,22 +149,25 @@ def run(nodes):
         app.broadcast()
 
     
-    n1 = nodes[0][0]
-    n4 = nodes[3][0]
-    p = Packet(
-        destination_address=8,
-        ident=123897, ttl=5, protocol='print', length=100)
-    thingie = SomeClass()
-    n4.add_protocol(protocol="print", handler=thingie)
-    Sim.scheduler.add(delay=1000, event=p, handler=n1.send_packet)
-    Sim.scheduler.run()
+    n1 = nodes[0]
+    n4 = nodes[3]
+    # p = Packet(
+    #     destination_address=32,
+    #     ident=123897, ttl=5, protocol='print', length=100)
+    # printing_app = PrintingApp()
+    # n13.add_protocol(protocol='print', handler=printing_app)
+    # Sim.scheduler.add(delay=1000, event=p, handler=n1.send_packet)
 
+    Sim.scheduler.add(delay=0, event=None, handler=n4.get_link('n1').down)
+    Sim.scheduler.add(delay=180, event=None, handler=n4.get_link('n1').up)
+
+    Sim.scheduler.run()
 
 def main():
     Sim.set_debug('Node')
     # run_five_nodes_line()
-    run_five_nodes_ring()
-    # run_fifteen_nodes()
+    # run_five_nodes_ring()
+    run_fifteen_nodes()
 
 
 if __name__ == '__main__':
